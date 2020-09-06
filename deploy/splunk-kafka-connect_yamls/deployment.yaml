@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: splunk-kafka-connect
+  labels:
+    app.kubernetes.io/name: splunk-kafka-connect
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: splunk-kafka-connect
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: splunk-kafka-connect
+    spec:
+      containers:
+      - name: splunk-kafka-connect
+        image: turbonomic/splunk-kafka-connect
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: LOG_DIR
+          value: /tmp/logs
+#        - name: KAFKA_OPTS
+#          value: "-Dhttp.useProxy=true -Dhttps.useProxy=true
+#                  -Dhttp.proxyHost=<proxyHost> -Dhttp.proxyPort=<proxyPort>
+#                  -Dhttps.proxyHost=<proxyHostHTTPS> -Dhttps.proxyPort=<proxyPortHTTPS>
+#                  -Dhttp.proxyUser=<ProxyUser> -Dhttp.proxyPassword=<ProxyPassword>
+#                  -Dhttps.proxyUser=<ProxyUserHTTPS> -Dhttps.proxyPassword=<ProxyPasswordHTTPS>"
+        ports:
+        - name: http
+          containerPort: 8083
+          protocol: TCP
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8083
+        resources:
+          limits:
+            memory: 2Gi
+        securityContext:
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL
+        volumeMounts:
+        - mountPath: /tmp
+          name: splunk-tmpfs0
+      volumes:
+      - name: splunk-tmpfs0
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: splunk-kafka-connect
+  labels:
+    app.kubernetes.io/name: splunk-kafka-connect
+spec:
+  ports:
+    - name: http-splunk-kafka-connect
+      port: 8083
+  selector:
+    app.kubernetes.io/name: splunk-kafka-connect
