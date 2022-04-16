@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # variables
-kafkaversion=2.7.2
+kafkaversion=3.1.0
 builddir=/tmp/splunk-kafka-connect-build/splunk-kafka-connect
 
 githash=`git rev-parse --short HEAD 2>/dev/null | sed "s/\(.*\)/@\1/"` # get current git hash
