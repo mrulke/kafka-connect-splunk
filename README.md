@@ -1,4 +1,6 @@
 ## Splunk Connect for Kafka
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fmrulke%2Fkafka-connect-splunk.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fmrulke%2Fkafka-connect-splunk?ref=badge_shield)
+
 
 Splunk Connect for Kafka is a Kafka Connect Sink for Splunk with the following features:
 
@@ -245,3 +247,6 @@ See [Splunk Docs](https://docs.splunk.com/Documentation/KafkaConnect/latest/User
 ## License
 
 Splunk Connect for Kafka  is licensed under the Apache License 2.0. Details can be found in the file LICENSE.
+
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fmrulke%2Fkafka-connect-splunk.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fmrulke%2Fkafka-connect-splunk?ref=badge_large)
