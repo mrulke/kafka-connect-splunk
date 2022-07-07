@@ -5,12 +5,41 @@ on:
     branches-ignore:
       - /^release\/.*/
       - master
+  workflow_call:
+    secrets:
+      FOSSA_API_KEY:
+        description: API token for FOSSA app
+        required: true
 
 jobs:
+  fossa-scan:
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: run fossa anlyze and create report
+        run: |
+          curl -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/fossas/fossa-cli/master/install-latest.sh | bash
+          fossa analyze --debug
+          fossa report attribution --format text > /tmp/THIRDPARTY
+        env:
+          FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
+      - name: upload THIRDPARTY file
+        uses: actions/upload-artifact@v2
+        with:
+          name: THIRDPARTY
+          path: /tmp/THIRDPARTY
+      - name: run fossa test
+        run: |
+          fossa test --debug
+        env:
+          FOSSA_API_KEY: ${{ secrets.FOSSA_API_KEY }}
 
   build-unit-test:
     name: build and run unit test
     runs-on: ubuntu-20.04
+    needs:
+      - fossa-scan
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -43,6 +72,7 @@ jobs:
     needs:
       - build-unit-test
     strategy:
+      fail-fast: false
       matrix:
         include:
           - kafka_version: "1.1.1"
@@ -59,6 +89,8 @@ jobs:
             kafka_package: "kafka_2.13-2.8.0.tgz"
           - kafka_version: "3.0.0"
             kafka_package: "kafka_2.13-3.0.0.tgz"
+          - kafka_version: "3.1.0"
+            kafka_package: "kafka_2.13-3.1.0.tgz"
     env:
       CI_SPLUNK_VERSION: "8.2.2"
       CI_SPLUNK_FILENAME: splunk-8.2.2-87344edfcdb4-Linux-x86_64.tgz
@@ -72,6 +104,7 @@ jobs:
       CI_KAFKA_HEADER_INDEX: kafka
       CI_DATAGEN_IMAGE: rock1017/log-generator:latest
       CI_OLD_CONNECTOR_VERSION: v2.0.1
+      SCHEMA_REGISTRY_URL: ${{ Secrets.SCHEMA_REGISTRY_URL }}
 
     steps:
       - name: Checkout
@@ -173,4 +206,3 @@ jobs:
           export PYTHONWARNINGS="ignore:Unverified HTTPS request"
           echo "Running functional tests....."
           python -m pytest --log-level=INFO
-
